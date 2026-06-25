@@ -1,10 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { useServerFn } from "@tanstack/react-start";
-import { useMutation } from "@tanstack/react-query";
-import { CheckCircle2, ArrowRight } from "lucide-react";
-import { toast } from "sonner";
-import { submitRsvp } from "@/lib/rsvp.functions";
+import { ArrowRight, ExternalLink } from "lucide-react";
 
 export const Route = createFileRoute("/register")({
   head: () => ({
@@ -19,185 +15,262 @@ export const Route = createFileRoute("/register")({
   component: RegisterPage,
 });
 
-type FormState = {
-  full_name: string;
-  email: string;
-  phone: string;
-  party_size: number;
-  interest: string;
-  notes: string;
-};
+const GOOGLE_FORM_URL =
+  "https://docs.google.com/forms/d/e/1FAIpQLSfAe9_hcurTjZKNuQSscrxWCDWyibwuODALBJR0f1t_VO1Qtg/viewform?embedded=true";
 
-const initial: FormState = {
-  full_name: "",
-  email: "",
-  phone: "",
-  party_size: 1,
-  interest: "5-a-side team",
-  notes: "",
-};
+const GOOGLE_FORM_DIRECT =
+  "https://docs.google.com/forms/d/e/1FAIpQLSfAe9_hcurTjZKNuQSscrxWCDWyibwuODALBJR0f1t_VO1Qtg/viewform?usp=header";
 
 function RegisterPage() {
-  const [form, setForm] = useState<FormState>(initial);
-  const [done, setDone] = useState(false);
-  const submit = useServerFn(submitRsvp);
-
-  const mutation = useMutation({
-    mutationFn: (data: FormState) => submit({ data }),
-    onSuccess: () => {
-      setDone(true);
-      toast.success("You're in! We'll be in touch.");
-    },
-    onError: (e: Error) => {
-      toast.error(e.message || "Something went wrong. Please try again.");
-    },
-  });
-
-  if (done) {
-    return (
-      <div className="mx-auto flex max-w-2xl flex-col items-center px-5 pt-24 pb-24 text-center lg:px-8">
-        <CheckCircle2 className="h-16 w-16 text-accent" />
-        <h1 className="mt-6 font-display text-5xl sm:text-6xl">YOU'RE <span className="text-gradient">IN!</span></h1>
-        <p className="mt-4 max-w-md text-muted-foreground">
-          Thanks {form.full_name.split(" ")[0]} — your spot is saved. We'll email{" "}
-          <span className="text-foreground">{form.email}</span> with venue details, your bracket
-          (if you're competing) and timings before the day.
-        </p>
-        <div className="mt-8 flex flex-wrap gap-3">
-          <Link to="/" className="rounded-md border border-border px-5 py-2.5 text-sm font-semibold transition hover:bg-secondary">Back to home</Link>
-          <button
-            onClick={() => { setDone(false); setForm(initial); }}
-            className="rounded-md bg-primary px-5 py-2.5 text-sm font-bold text-primary-foreground transition hover:brightness-110"
-          >
-            Register someone else
-          </button>
-        </div>
-      </div>
-    );
-  }
+  const [loaded, setLoaded] = useState(false);
 
   return (
-    <div className="mx-auto grid max-w-6xl gap-12 px-5 pt-20 pb-24 lg:grid-cols-[1fr_1.4fr] lg:gap-16 lg:px-8">
-      <div>
-        <div className="text-xs font-bold uppercase tracking-[0.25em] text-accent">Free RSVP</div>
-        <h1 className="mt-3 font-display text-5xl sm:text-6xl">
-          SAVE YOUR <span className="text-gradient">SPOT</span>
-        </h1>
-        <p className="mt-5 text-muted-foreground">
-          Tell us a few details and we'll send confirmation, venue info and updates
-          for August 3rd in Mervue, Galway.
-        </p>
-        <ul className="mt-8 space-y-3 text-sm text-muted-foreground">
-          <li className="flex gap-2"><span className="text-accent">✔</span> 100% free to RSVP</li>
-          <li className="flex gap-2"><span className="text-accent">✔</span> Pick your tournament when you sign up</li>
-          <li className="flex gap-2"><span className="text-accent">✔</span> Full details emailed before the day</li>
-        </ul>
+    <div className="register-page">
+      {/* ── Hero section ── */}
+      <div className="register-hero">
+        <div className="register-hero-inner">
+          <div className="register-tag">Free RSVP</div>
+          <h1 className="register-title">
+            SAVE YOUR <span className="text-gradient">SPOT</span>
+          </h1>
+          <p className="register-subtitle">
+            Fill in the form below and we'll send you confirmation, venue info
+            and updates for <strong>August 3rd</strong> in Mervue, Galway.
+          </p>
+          <ul className="register-perks">
+            <li><span className="register-check">✔</span> 100% free to RSVP</li>
+            <li><span className="register-check">✔</span> Pick your tournament when you sign up</li>
+            <li><span className="register-check">✔</span> Full details emailed before the day</li>
+          </ul>
+          <a
+            href={GOOGLE_FORM_DIRECT}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="register-external-link"
+          >
+            Open form in new tab <ExternalLink className="h-4 w-4" />
+          </a>
+        </div>
       </div>
 
-      <form
-        onSubmit={(e) => { e.preventDefault(); mutation.mutate(form); }}
-        className="rounded-2xl border border-border/60 bg-card/60 p-6 sm:p-8"
-      >
-        <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="Full name" required>
-            <input
-              required maxLength={120}
-              value={form.full_name}
-              onChange={(e) => setForm({ ...form, full_name: e.target.value })}
-              className="form-input"
-              placeholder="Your name"
-            />
-          </Field>
-          <Field label="Email" required>
-            <input
-              required type="email" maxLength={254}
-              value={form.email}
-              onChange={(e) => setForm({ ...form, email: e.target.value })}
-              className="form-input"
-              placeholder="you@example.com"
-            />
-          </Field>
-          <Field label="Phone (optional)">
-            <input
-              type="tel" maxLength={40}
-              value={form.phone}
-              onChange={(e) => setForm({ ...form, phone: e.target.value })}
-              className="form-input"
-              placeholder="+353 …"
-            />
-          </Field>
-          <Field label="How many of you?" required>
-            <input
-              required type="number" min={1} max={50}
-              value={form.party_size}
-              onChange={(e) => setForm({ ...form, party_size: Math.max(1, Math.min(50, Number(e.target.value) || 1)) })}
-              className="form-input"
-            />
-          </Field>
-          <Field label="I'm interested in" className="sm:col-span-2">
-            <select
-              value={form.interest}
-              onChange={(e) => setForm({ ...form, interest: e.target.value })}
-              className="form-input"
-            >
-              <option>5-a-side team</option>
-              <option>1v1 tournament</option>
-              <option>Side games (penalty / crossbar / raffles)</option>
-              <option>Just attending — music, food &amp; vibes</option>
-              <option>Volunteering / helping out</option>
-            </select>
-          </Field>
-          <Field label="Anything else?" className="sm:col-span-2">
-            <textarea
-              maxLength={1000} rows={4}
-              value={form.notes}
-              onChange={(e) => setForm({ ...form, notes: e.target.value })}
-              className="form-input resize-y"
-              placeholder="Team name, dietary stuff, questions…"
-            />
-          </Field>
+      {/* ── Embedded form section ── */}
+      <div className="register-form-section">
+        <div className="register-form-wrapper">
+          {/* Loading state */}
+          {!loaded && (
+            <div className="register-loader">
+              <div className="register-spinner" />
+              <span>Loading registration form…</span>
+            </div>
+          )}
+
+          <iframe
+            src={GOOGLE_FORM_URL}
+            title="MayDay Galway City Registration Form"
+            className={`register-iframe ${loaded ? "register-iframe--visible" : ""}`}
+            onLoad={() => setLoaded(true)}
+            frameBorder="0"
+            marginHeight={0}
+            marginWidth={0}
+            allowFullScreen
+          >
+            Loading…
+          </iframe>
         </div>
 
-        <button
-          type="submit"
-          disabled={mutation.isPending}
-          className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-md bg-accent px-6 py-3 text-sm font-bold text-accent-foreground shadow-[var(--shadow-neon)] transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
-        >
-          {mutation.isPending ? "Saving…" : <>Register Free <ArrowRight className="h-4 w-4" /></>}
-        </button>
-        <p className="mt-3 text-xs text-muted-foreground">
-          By registering you agree to receive event-related updates by email. We won't share your details.
+        <p className="register-fallback">
+          Having trouble viewing the form?{" "}
+          <a href={GOOGLE_FORM_DIRECT} target="_blank" rel="noopener noreferrer">
+            Open it directly here
+          </a>
+          .
         </p>
-      </form>
+      </div>
 
       <style>{`
-        .form-input {
-          width: 100%;
-          background: var(--color-background);
-          border: 1px solid var(--color-border);
-          color: var(--color-foreground);
-          border-radius: 0.5rem;
-          padding: 0.65rem 0.85rem;
-          font-size: 0.9rem;
-          outline: none;
-          transition: border-color 0.15s, box-shadow 0.15s;
+        .register-page {
+          min-height: 100vh;
+          display: flex;
+          flex-direction: column;
         }
-        .form-input:focus {
-          border-color: var(--color-primary);
-          box-shadow: 0 0 0 3px oklch(0.62 0.28 300 / 0.25);
+
+        /* ── Hero ── */
+        .register-hero {
+          position: relative;
+          padding: 5rem 1.25rem 3rem;
+          text-align: center;
+          overflow: hidden;
+        }
+        .register-hero::before {
+          content: "";
+          position: absolute;
+          inset: 0;
+          background: radial-gradient(
+            ellipse 70% 50% at 50% 0%,
+            oklch(0.35 0.15 300 / 0.25) 0%,
+            transparent 100%
+          );
+          pointer-events: none;
+        }
+        .register-hero-inner {
+          position: relative;
+          max-width: 640px;
+          margin: 0 auto;
+        }
+        .register-tag {
+          font-size: 0.7rem;
+          font-weight: 700;
+          letter-spacing: 0.25em;
+          text-transform: uppercase;
+          color: var(--color-accent, oklch(0.75 0.18 300));
+        }
+        .register-title {
+          margin-top: 0.75rem;
+          font-family: var(--font-display, inherit);
+          font-size: clamp(2.5rem, 6vw, 4rem);
+          line-height: 1.05;
+        }
+        .register-subtitle {
+          margin-top: 1.25rem;
+          color: var(--color-muted-foreground, #999);
+          max-width: 480px;
+          margin-inline: auto;
+          line-height: 1.6;
+        }
+        .register-subtitle strong {
+          color: var(--color-foreground, #fff);
+        }
+
+        .register-perks {
+          list-style: none;
+          padding: 0;
+          margin: 2rem auto 0;
+          display: inline-flex;
+          flex-direction: column;
+          gap: 0.65rem;
+          text-align: left;
+          font-size: 0.85rem;
+          color: var(--color-muted-foreground, #999);
+        }
+        .register-perks li {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+        }
+        .register-check {
+          color: var(--color-accent, oklch(0.75 0.18 300));
+          font-size: 0.9rem;
+        }
+
+        .register-external-link {
+          margin-top: 1.5rem;
+          display: inline-flex;
+          align-items: center;
+          gap: 0.4rem;
+          font-size: 0.8rem;
+          font-weight: 500;
+          color: var(--color-muted-foreground, #999);
+          text-decoration: none;
+          transition: color 0.2s;
+        }
+        .register-external-link:hover {
+          color: var(--color-foreground, #fff);
+        }
+
+        /* ── Form section ── */
+        .register-form-section {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          padding: 0 1.25rem 4rem;
+        }
+
+        .register-form-wrapper {
+          position: relative;
+          width: 100%;
+          max-width: 720px;
+          border-radius: 1rem;
+          overflow: hidden;
+          border: 1px solid var(--color-border, rgba(255 255 255 / 0.08));
+          background: var(--color-card, rgba(255 255 255 / 0.04));
+          box-shadow:
+            0 0 0 1px rgba(255 255 255 / 0.03),
+            0 20px 60px -12px rgba(0 0 0 / 0.5),
+            0 0 40px -8px oklch(0.5 0.2 300 / 0.08);
+          min-height: 600px;
+        }
+
+        /* Loading overlay */
+        .register-loader {
+          position: absolute;
+          inset: 0;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          gap: 1rem;
+          z-index: 2;
+          font-size: 0.85rem;
+          color: var(--color-muted-foreground, #999);
+          background: var(--color-card, rgba(255 255 255 / 0.04));
+        }
+        .register-spinner {
+          width: 32px;
+          height: 32px;
+          border: 3px solid var(--color-border, rgba(255 255 255 / 0.1));
+          border-top-color: var(--color-accent, oklch(0.75 0.18 300));
+          border-radius: 50%;
+          animation: register-spin 0.8s linear infinite;
+        }
+        @keyframes register-spin {
+          to { transform: rotate(360deg); }
+        }
+
+        /* Iframe */
+        .register-iframe {
+          display: block;
+          width: 100%;
+          height: 1100px;
+          border: none;
+          opacity: 0;
+          transition: opacity 0.5s ease;
+        }
+        .register-iframe--visible {
+          opacity: 1;
+        }
+
+        .register-fallback {
+          margin-top: 1rem;
+          font-size: 0.75rem;
+          color: var(--color-muted-foreground, #999);
+          text-align: center;
+        }
+        .register-fallback a {
+          color: var(--color-accent, oklch(0.75 0.18 300));
+          text-decoration: underline;
+          text-underline-offset: 2px;
+        }
+        .register-fallback a:hover {
+          color: var(--color-foreground, #fff);
+        }
+
+        /* ── Responsive ── */
+        @media (min-width: 768px) {
+          .register-hero {
+            padding: 6rem 2rem 3.5rem;
+          }
+          .register-form-section {
+            padding: 0 2rem 5rem;
+          }
+          .register-form-wrapper {
+            min-height: 700px;
+          }
+          .register-iframe {
+            height: 1200px;
+          }
         }
       `}</style>
     </div>
-  );
-}
-
-function Field({ label, children, required, className }: { label: string; children: React.ReactNode; required?: boolean; className?: string }) {
-  return (
-    <label className={`block ${className ?? ""}`}>
-      <span className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-        {label} {required && <span className="text-accent">*</span>}
-      </span>
-      {children}
-    </label>
   );
 }
