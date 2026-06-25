@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { ArrowRight, ExternalLink } from "lucide-react";
 
@@ -69,7 +69,7 @@ function RegisterPage() {
             title="MayDay Galway City Registration Form"
             className={`register-iframe ${loaded ? "register-iframe--visible" : ""}`}
             onLoad={() => setLoaded(true)}
-            frameBorder="0"
+            frameBorder={0}
             marginHeight={0}
             marginWidth={0}
             allowFullScreen
